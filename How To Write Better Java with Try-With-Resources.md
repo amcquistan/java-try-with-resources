@@ -2,7 +2,9 @@
 
 ### Introduction
 
-In this How To article I demonstrate using the try-with-resources construct introduced in java 7 and compare it to the traditional try-finally paradigm. Both of these constructs aim to solve the problem of making sure a resources get properly closed to avoid memory leaks but this article intends to help make the case for why the newer try-with-resources construct is preferred.
+In this How To article I demonstrate using the try-with-resources programming construct and compare it to the traditional try-finally paradigm. Both of these approaches aim to solve the problem of making sure resources get properly closed to avoid resource leaks but, this article intends to help make the case for why try-with-resources is preferrable.
+
+I keep using this word resource which I recognize as a slightly ambiguous term to generically define something so, let me specify what is meant. Accoridng the the [Oracle Docs](https://docs.oracle.com/javase/tutorial/essential/exceptions/tryResourceClose.html), a resource is an object that is intended to be closed when a program is done executing and, furthermore, its good practice for objects that are intented to be used as resources to implement either or both java.lang.AutoCloseable and java.io.Closeable interfaces.
 
 ### Custom Classes to Make for Easier Tracking
 
@@ -104,9 +106,9 @@ public class MyFileWriter extends FileWriter {
 
 ### Traditional Try - Finally 
 
-The legacy try-finally construct does accomplish the goal of ensuring that resources are capable of being closed by providing a finally block that is ensured to be reached in a programs execution path in the event of an exception there are a couple of flaws commonly seen.  The first issue I have is that its potentially unnecessarily verbose and the second is that it sets up a potential for exceptions being thrown in the finally block which are likely to obscure earlier exceptions.
+The legacy try-finally construct does accomplish the goal of ensuring that resources are capable of being closed via a finally block that is ensured to be reached in a programs execution path in the event of an exception. However, there are a couple of flaws commonly seen in Java programs when utilizing this approach.  The first issue is largely asethetic in that its now unnecessarily verbose and the second is that it sets up a potential for exceptions being thrown in the finally block which are likely to obscure earlier exceptions.
 
-As an example, I the following code example successfully uses a try-finally to read a file named greeting.txt which manually closes a MyBufferedReader instance.
+As an example, the following code sample successfully uses a try-finally to read a file named greeting.txt which manually closes a MyBufferedReader instance.
 
 greeting.txt
 
@@ -152,14 +154,6 @@ public class App {
             reader.close();
         }
     }
-
-    static void printHeader(String header) {
-        int w = 100;
-        String bar = "-".repeat(w);
-        System.out.println("\n" + bar);
-        System.out.println(StringUtils.center(header, w));
-        System.out.println(bar);
-    }
 }
 ```
 
@@ -181,7 +175,7 @@ MyFileReader closing ...
 MyBufferedReader closing ...
 ```
 
-Ok, proof enough that the resources are closed right, afterall, you see me explicitly doing this in the finally block. Lets take a look at the try-with-resources version of this same method.
+Ok, proof enough that the resources are closed, afterall, you see me explicitly doing this in the finally block. Lets take a look at the try-with-resources version of this same method.
 
 ```
 
@@ -215,14 +209,6 @@ public class App {
             }
         }
     }
-
-    static void printHeader(String header) {
-        int w = 100;
-        String bar = "-".repeat(w);
-        System.out.println("\n" + bar);
-        System.out.println(StringUtils.center(header, w));
-        System.out.println(bar);
-    }
 }
 ```
 
@@ -245,10 +231,11 @@ MyFileReader closing ...
 MyBufferedReader closing ...
 ```
 
-// make argument, fewer lines of code, maybe more readable / maybe not depending on taste
+So far you may be saying, "ok thats great and all, less code is more readable so I may go about updating my code if I think about it next time I come accross my existing try / finally implementations but, I'm probably not going to go out actively do this".
 
+And I'd say fair point.
 
-Moving on, now lets take a look at what happens if I try to open a file that doesn't exist.
+Moving on, now lets take a look at what happens if I try to open a file that doesn't exist using the same try-finally implementation.
 
 ```
 package com.thecodinginterface.autoclosable;
@@ -296,14 +283,6 @@ public class App {
             reader.close();
         }
     }
-
-    static void printHeader(String header) {
-        int w = 100;
-        String bar = "-".repeat(w);
-        System.out.println("\n" + bar);
-        System.out.println(StringUtils.center(header, w));
-        System.out.println(bar);
-    }
 }
 ```
 
@@ -322,7 +301,69 @@ java.lang.NullPointerException
         at com.thecodinginterface.autoclosable.App.main(App.java:19)
 ```
 
-As you can see the reader variable is never assigned a MyBufferedReader instance and thus, throws a NullPointerException when I try to call close on it in the finally block but, notice that the true source problem exception of the file not existing is obscured and not included in the stack trace.
+As you can see the reader variable is never assigned a MyBufferedReader instance and thus, throws a NullPointerException (NPE) when I try to call close on it in the finally block. More importantly, notice that the true source of the problem, the FileNotFoundException thrown due to the misisng file, is obscured and otherwise not included in the stack trace leaving me hunting down the cause of the NPE which is pretty straight forward but, it sure would be nice to know right off the bat the true source of the problem in my code.
+
+Lets now take a look at the same missing file execution and output using the try-with-resources implementation.
+
+```
+
+package com.thecodinginterface.autoclosable;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+
+import org.apache.commons.lang3.StringUtils;
+
+public class App {
+    public static void main(String[] args) {
+
+        try {
+            readGreeting_TWR();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * implemented greeting reader with try-with-resources
+     * which is noticably less code
+     */
+    static void readGreeting_TWR() throws IOException {
+        printHeader("Read Greeting (try-with-resources)");
+        try (var reader = new MyBufferedReader(new MyFileReader("greeting.txt"))) {
+            String line = null;
+            while((line = reader.readLine()) != null) {
+                System.out.println(line);
+            }
+        }
+    }
+}
+```
+
+And the output.
+
+```
+
+$ ./gradlew run
+
+> Task :run
+
+----------------------------------------------------------------------------------------------------
+                               Greeting Missing (try-with-resources)                                
+----------------------------------------------------------------------------------------------------
+java.io.FileNotFoundException: does_not_exist.txt (No such file or directory)
+        at java.base/java.io.FileInputStream.open0(Native Method)
+        at java.base/java.io.FileInputStream.open(FileInputStream.java:213)
+        at java.base/java.io.FileInputStream.<init>(FileInputStream.java:155)
+        at java.base/java.io.FileInputStream.<init>(FileInputStream.java:110)
+        at java.base/java.io.FileReader.<init>(FileReader.java:60)
+        at com.thecodinginterface.autoclosable.MyFileReader.<init>(MyFileReader.java:10)
+        at com.thecodinginterface.autoclosable.App.readGreeting_TWR_NoNPE(App.java:125)
+        at com.thecodinginterface.autoclosable.App.main(App.java:37)
+```
+
+As you can see the original source, or first root cause, exception is the one that gets included int the stack trace which is likely to get me to the corret solution (ie, I'm opening a file that does not exist) more directly that what was seen it the try-finally implementation.
 
 
 
