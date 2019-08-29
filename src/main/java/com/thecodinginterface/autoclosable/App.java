@@ -1,5 +1,5 @@
 
-package com.thecodinginterface.autoclosable;
+package com.thecodinginterface.twr;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -166,7 +166,7 @@ public class App {
     }
 
     static void printHeader(String header) {
-        int w = 100;
+        int w = 86;
         String bar = "-".repeat(w);
         System.out.println("\n" + bar);
         System.out.println(StringUtils.center(header, w));
