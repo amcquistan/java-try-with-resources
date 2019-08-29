@@ -148,7 +148,9 @@ public class App {
 
     /**
      * again, noticably few lines of code using try-with-resources
-     * and safer / won't obscure early exceptions
+     * and safer / won't obscure early exceptions. When multiple resources
+     * are declared in the TWR they are separated with semicolons and
+     * closed in the order they are declared right-to-left
      */
     static void copyLineByLine_TWR() throws IOException {
         printHeader("Copy Line By Line (try-with-resources)");
