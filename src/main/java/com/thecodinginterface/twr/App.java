@@ -9,35 +9,35 @@ import org.apache.commons.lang3.StringUtils;
 
 public class App {
     public static void main(String[] args) {
-        try {
-            readGreeting();
-        } catch(IOException e) {
-            e.printStackTrace();
-        }
+        // try {
+        //     readGreeting();
+        // } catch(IOException e) {
+        //     e.printStackTrace();
+        // }
 
-        try {
-            readGreeting_NPE();
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
+        // try {
+        //     readGreeting_TWR();
+        // } catch (Exception e) {
+        //     e.printStackTrace();
+        // }
 
-        try {
-            copyLineByLine();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        // try {
+        //     readGreeting_NPE();
+        // } catch(Exception e) {
+        //     e.printStackTrace();
+        // }
 
-        try {
-            readGreeting_TWR();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        // try {
+        //     readGreeting_TWR_NoNPE();
+        // } catch (Exception e) {
+        //     e.printStackTrace();
+        // }
 
-        try {
-            readGreeting_TWR_NoNPE();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        // try {
+        //     copyLineByLine();
+        // } catch (Exception e) {
+        //     e.printStackTrace();
+        // }
 
         try {
             copyLineByLine_TWR();
@@ -93,7 +93,8 @@ public class App {
     /**
      * hard to read nested try / finally which also still
      * suffers from the problem of a potential NPE obsuring
-     * an earlier thrown exception
+     * an earlier thrown exception and made more likely due to 
+     * the fact there are two resources being utilized in the code
      */
     static void copyLineByLine() throws IOException {
         printHeader("Copy Line By Line (try / finally)");
