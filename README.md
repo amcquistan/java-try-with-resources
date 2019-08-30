@@ -1,5 +1,9 @@
 # java-try-with-resources
 
+This is the sample code for the blog article [How To Write Better Java with Try-With-Resources](https://thecodinginterface.com/blog/java-try-with-resources/)
+
+### Usage
+
 Mac / Linux
 
 ```
